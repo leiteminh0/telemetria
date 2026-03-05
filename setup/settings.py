@@ -138,7 +138,11 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD ='django.db.models.BigAutoField'
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS Configuration
+# WARNING: CORS_ALLOW_ALL_ORIGINS = True is only for development!
+# In production, restrict to specific origins:
+# CORS_ALLOWED_ORIGINS = ['https://yourdomain.com']
+CORS_ALLOW_ALL_ORIGINS = config('CORS_ALLOW_ALL', default=True, cast=bool)
 
 SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,

@@ -7,6 +7,7 @@ from api_telemetria.models import (
     Medicao,
     MedicaoVeiculo
 )
+import datetime
 
 
 class MarcaSerializer(serializers.ModelSerializer):
@@ -44,13 +45,26 @@ class VeiculoSerializer(serializers.ModelSerializer):
         model = Veiculo
         fields = "__all__"
         extra_kwargs= {
-            'id': {'help_text': 'Identificador do Veiculo'}, 
-            'descricao': {'help_text': 'Indentificador do veiculo'},
-            'marca': {'help_text': 'Indentificador do veiculo. Buscar no Get da Api veiculo'},
-            'modelo': {'help_text': 'Indentificador do veiculo.Buscar no Get da Api veiculo'},
-            'ano': {'help_text': 'Ano de fabricacao do veiculo'},
-            'horimetro': {'help_text': 'Horimetro rodado por kilometro do veiculo'}
+            'id': {'help_text': 'Identificador único do veículo'}, 
+            'descricao': {'help_text': 'Descrição detalhada do veículo'},
+            'marca': {'help_text': 'ID da marca do veículo (consulte /api/marcas/)'},
+            'modelo': {'help_text': 'ID do modelo do veículo (consulte /api/modelos/)'},
+            'ano': {'help_text': 'Ano de fabricação do veículo (1900 até ano atual + 1)'},
+            'horimetro': {'help_text': 'Horímetro atual do veículo em horas (deve ser >= 0)'}
         }
+    
+    def validate_ano(self, value):
+        ano_atual = datetime.date.today().year
+        if value < 1900 or value > ano_atual + 1:
+            raise serializers.ValidationError(
+                f"Ano deve estar entre 1900 e {ano_atual + 1}."
+            )
+        return value
+    
+    def validate_horimetro(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Horímetro não pode ser negativo.")
+        return value
 
 
 class MedicaoSerializer(serializers.ModelSerializer):
@@ -69,11 +83,15 @@ class MedicaoVeiculoSerializer(serializers.ModelSerializer):
         model = MedicaoVeiculo
         fields = "__all__"
         extra_kwargs= {
-            'id': {'help_text': 'Identificador da Medição veiculo'},
-            'veiculoid': {'help_text': 'Identificador do veiculo. Buscar no Get da Api veiculo'},
-            'medicaoid': {'help_text': 'Identificador do tipo de medição. Buscar no Get da API Medicao'},
-            'data': {'help_text': 'Data e hora da medição realizada, essa informação deve vir da automação'},
-            'valor': {'help_text': 'Valor medido na automação.'}
-
-          }
+            'id': {'help_text': 'Identificador único da medição do veículo'},
+            'veiculo': {'help_text': 'ID do veículo medido (consulte /api/veiculos/)'},
+            'medicao': {'help_text': 'ID do tipo de medição (consulte /api/medicoes/)'},
+            'data': {'help_text': 'Data e hora em que a medição foi realizada'},
+            'valor': {'help_text': 'Valor numérico da medição (deve ser >= 0)'}
+        }
+    
+    def validate_valor(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Valor da medição não pode ser negativo.")
+        return value
 
