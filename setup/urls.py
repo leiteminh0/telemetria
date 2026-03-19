@@ -16,6 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.conf.urls.static import static
+from django.conf import settings
 from rest_framework import routers, permissions
 from api_telemetria.api.viewsets import (
     MarcaViewSet,
@@ -23,7 +25,9 @@ from api_telemetria.api.viewsets import (
     UnidadeMedidaViewSet,
     VeiculoViewSet,
     MedicaoViewSet,
-    MedicaoVeiculoViewSet
+    MedicaoVeiculoViewSet,
+    MedicaoVeiculoTempViewsets,
+    ImportarMedicaoCSVViewSet
 )
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
@@ -49,15 +53,18 @@ router.register(r'unidades-medida', UnidadeMedidaViewSet)
 router.register(r'veiculos', VeiculoViewSet)
 router.register(r'medicoes', MedicaoViewSet)
 router.register(r'medicoes-veiculo', MedicaoVeiculoViewSet)
+router.register(r'medicaotemp', MedicaoVeiculoTempViewsets, basename='medicaotemp')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('medicoes-csv/', ImportarMedicaoCSVViewSet.as_view(), name='importar-medicoes-csv'),
 ]
 
 urlpatterns += [
     path('swaggerjson/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),]
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
  

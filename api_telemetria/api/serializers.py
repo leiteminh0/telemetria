@@ -5,7 +5,8 @@ from api_telemetria.models import (
     UnidadeMedida,
     Veiculo,
     Medicao,
-    MedicaoVeiculo
+    MedicaoVeiculo,
+    MedicaoVeiculoTemp
 )
 import datetime
 
@@ -95,3 +96,17 @@ class MedicaoVeiculoSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Valor da medição não pode ser negativo.")
         return value
 
+
+class UploadCSVSerializer(serializers.Serializer):
+    arquivo = serializers.FileField()
+
+    def validate_arquivo(self, value):
+        if not value.name.lower().endswith(".csv"):
+            raise serializers.ValidationError("O arquivo enviado não é .csv")
+        return value
+
+
+class MedicaoVeiculoTempSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MedicaoVeiculoTemp
+        fields = "__all__"

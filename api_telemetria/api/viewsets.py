@@ -1,5 +1,12 @@
 from rest_framework import viewsets
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.parsers import MultiPartParser, FormParser
 from api_telemetria.api.mixins import SwaggerDocMixin
+from api_telemetria.api import serializers
+from api_telemetria.api.services import processar_csv_medicoes
+from api_telemetria import models
 from api_telemetria.models import (
     Marca,
     Modelo,
@@ -46,3 +53,28 @@ class MedicaoViewSet(SwaggerDocMixin, viewsets.ModelViewSet):
 class MedicaoVeiculoViewSet(SwaggerDocMixin, viewsets.ModelViewSet):
     queryset = MedicaoVeiculo.objects.all()
     serializer_class = MedicaoVeiculoSerializer
+
+
+class ImportarMedicaoCSVViewSet(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request, *args, **kwargs):
+        serializer = serializers.UploadCSVSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        arquivo = serializer.validated_data["arquivo"]
+        try:
+            resultado = processar_csv_medicoes(arquivo)
+            return Response(
+                {"mensagem": "Arquivo processado com sucesso.", "resultado": resultado},
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            return Response(
+                {"erro": "Falha ao processar o arquivo.", "detalhe": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class MedicaoVeiculoTempViewsets(SwaggerDocMixin, viewsets.ModelViewSet):
+    serializer_class = serializers.MedicaoVeiculoTempSerializer
+    queryset = models.MedicaoVeiculoTemp.objects.all()
