@@ -145,6 +145,16 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 
+MQTT = {
+    'HOST': config('MQTT_HOST', default='127.0.0.1'),
+    'PORT': config('MQTT_PORT', default=1883, cast=int),
+    'KEEPALIVE': config('MQTT_KEEPALIVE', default=60, cast=int),
+    'TOPIC': config('MQTT_TOPIC', default='dadosSensor'),
+    'CLIENT_ID': config('MQTT_CLIENT_ID', default='django-mqtt-worker'),
+    'USERNAME': config('MQTT_USERNAME', default=None),
+    'PASSWORD': config('MQTT_PASSWORD', default=None),
+}
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 

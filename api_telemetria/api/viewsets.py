@@ -78,3 +78,4 @@ class ImportarMedicaoCSVViewSet(APIView):
 class MedicaoVeiculoTempViewsets(SwaggerDocMixin, viewsets.ModelViewSet):
     serializer_class = serializers.MedicaoVeiculoTempSerializer
     queryset = models.MedicaoVeiculoTemp.objects.all()
+        
