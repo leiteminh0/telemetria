@@ -1,10 +1,11 @@
+import datetime
 import os
 import json
-import datetime
 import django
 import paho.mqtt.client as mqtt
 from django.utils import timezone
 
+# inicializa o Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "setup.settings")
 django.setup()
 
@@ -14,38 +15,49 @@ from api_telemetria.models import MedicaoVeiculo, Veiculo, Medicao
 
 def on_connect(client, userdata, flags, rc):
     print(f"[MQTT] Conectado com rc={rc}")
-    topic = settings.MQTT.get("TOPIC", "dadosSensor")
+
+    topic = settings.MQTT.get("TOPIC", "planta/sensores/#")
     client.subscribe(topic)
     print(f"[MQTT] Inscrito em {topic}")
 
 
-def inserir_medicao(item):
-    """Processa e insere um único registro de medição no banco de dados."""
-    valor = float(item["valor"])
-    veiculoid = int(item["veiculoid"])
-    medicaoid = int(item["sensorid"])
-    datae = datetime.datetime.fromisoformat(item["data"])
+def processar_item(data):
+    valor = float(data["valor"])
+    veiculoid = int(data["veiculoid"])
+    medicaoid = int(data["medicaoid"])
+    datae = datetime.datetime.fromisoformat(data["data"])
 
     veiculo = Veiculo.objects.get(id=veiculoid)
     medicao = Medicao.objects.get(id=medicaoid)
 
     MedicaoVeiculo.objects.create(
         data=datae,
-        veiculo=veiculo,
-        medicao=medicao,
+        veiculoid=veiculo,
+        medicaoid=medicao,
         valor=valor,
     )
 
-    print(f"[MQTT] Salvo: veiculo={veiculoid} medicao={medicaoid} valor={valor}")
+    print(f"[MQTT] Salvo: veiculo={veiculoid} sensor={medicaoid} valor={valor}")
 
 
 def on_message(client, userdata, msg):
     try:
-        data = json.loads(msg.payload.decode())
+        payload = json.loads(msg.payload.decode())
 
-        # Percorre o vetor e chama a função de inserção para cada item
-        for item in data:
-            inserir_medicao(item)
+        # Se vier apenas 1 objeto json
+        if isinstance(payload, dict):
+            processar_item(payload)
+
+        # Se vier um vetor/lista de json
+        elif isinstance(payload, list):
+            for item in payload:
+                try:
+                    processar_item(item)
+                except Exception as e:
+                    print(f"[ERRO] Falha ao processar item da lista: {e} | item={item}")
+
+        else:
+            print("[ERRO] Payload recebido não é nem objeto JSON nem lista JSON")
 
     except Exception as e:
         print(f"[ERRO] Falha ao processar mensagem: {e}")

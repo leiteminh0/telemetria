@@ -145,15 +145,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 
-MQTT = {
-    'HOST': config('MQTT_HOST', default='127.0.0.1'),
-    'PORT': config('MQTT_PORT', default=1883, cast=int),
-    'KEEPALIVE': config('MQTT_KEEPALIVE', default=60, cast=int),
-    'TOPIC': config('MQTT_TOPIC', default='dadosSensor'),
-    'CLIENT_ID': config('MQTT_CLIENT_ID', default='django-mqtt-worker'),
-    'USERNAME': config('MQTT_USERNAME', default=None),
-    'PASSWORD': config('MQTT_PASSWORD', default=None),
-}
+
+
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -165,4 +158,13 @@ SWAGGER_SETTINGS = {
             'type': 'basic'
         }
     }
+}
+MQTT = {
+    "HOST": "jaragua.lmq.cloudamqp.com",
+    "PORT": 1883,
+    "KEEPALIVE": 60,
+    "TOPIC": "dadosSensor",
+    "CLIENT_ID": "django-mqtt-worker",
+    "USERNAME": "rjsbmuuh:rjsbmuuh",
+    "PASSWORD": "qpr46cWzATEHvLBpN2v29OWkH-Lyh1P9",
 }
